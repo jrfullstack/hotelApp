@@ -42,6 +42,7 @@ function App() {
     const encryption = (hash.toString(CryptoJS.enc.Hex));
     // console.log({VITE_API_SECRET})
     const data = await axios.get(`${VITE_API_URL}/locations/terminals`, {
+      method: 'GET',
         headers: {
           'Content-Type': 'application/json',
           'Api-Key': VITE_API_KEY,
