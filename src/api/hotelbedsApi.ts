@@ -1,7 +1,7 @@
 import axios from "axios";
 import { getEnvVariables } from "../helpers";
 
-const {VITE_API_URL} = getEnvVariables();
+const {VITE_API_URL, VITE_API_KEY} = getEnvVariables();
 
 
 
@@ -12,10 +12,14 @@ const hotelbedsApi = axios.create({
 
 hotelbedsApi.interceptors.request.use( config => {
 
-  // config.headers = {
-  //     ...config.headers,
-  //     'x-token': localStorage.getItem('token')
-  // }
+  config.headers = {
+      ...config.headers,
+      'Api-Key': VITE_API_KEY,
+  },
+  config.params = {
+    ...config.params,
+
+  }
 
   return config;
 })

@@ -1,8 +1,7 @@
 import CryptoJS from 'crypto-js';
 import { getEnvVariables } from '../helpers';
 
-const {VITE_API_URL, VITE_API_KEY, VITE_API_SECRET} = getEnvVariables();
-
+const { VITE_API_URL, VITE_API_KEY, VITE_API_SECRET } = getEnvVariables();
 
 interface Props {
   route: string;
@@ -10,51 +9,57 @@ interface Props {
   fields: string;
   language: string;
   codes?: string;
-  countryCodes?: string;
   offset: string;
   limit: string;
 }
 
-export const getTransfers = async({
-  route, 
+export const getTransfers = async ({
+  route,
   category,
   fields,
   language,
   codes,
-  // countryCodes,
   offset,
-  limit, 
+  limit,
 }: Props) => {
+  const utcDate = Math.floor(new Date().getTime() / 1000);
+  // const assemble2 = `${VITE_API_KEY}${VITE_API_SECRET}${utcDate}`;
+  const assemble = VITE_API_KEY+VITE_API_SECRET+utcDate;
 
-  const utcDate = Math.floor(new Date().getTime() / 1000);  
-  const assemble = (VITE_API_KEY+VITE_API_SECRET+utcDate);
+  // console.log(assemble2)
+  // console.log(process.env.VITE_API_KEY)  
 
   const hash = CryptoJS.SHA256(assemble);
-  const encryption = (hash.toString(CryptoJS.enc.Hex));
+  const encryption = hash.toString(CryptoJS.enc.Hex);
 
-  
-  const requestOptions = {
+  const queryParams = `fields=${encodeURIComponent(fields)}&language=${encodeURIComponent(
+    language
+  )}&codes=${encodeURIComponent(codes || '')}&offset=${encodeURIComponent(
+    offset
+  )}&limit=${encodeURIComponent(limit)}`;
+
+  const endpoint = `${VITE_API_URL}/${route}/${category}?${queryParams}`;
+
+  const requestOptions: RequestInit = {
     method: 'GET',
-    headers: { 
+    headers: {
       'Content-Type': 'application/json',
       'Api-Key': VITE_API_KEY,
       'X-Signature': encryption,
     },
-    // mode: "cors",npm i
-    
     
   };
-  const endpoint = `${VITE_API_URL}/${route}/${category}?fields=${fields}&language=${language}&codes=${codes}&pffset=${offset}&limit=${limit}`;
-  
+
   try {
     const resp = await fetch(endpoint, requestOptions);
-    const {data} = await resp.json();
-    console.log({data})
-    
+
+    if (!resp.ok) {
+      throw new Error(`Error: ${resp.status} - ${resp.statusText}`);
+    }
+
+    const data = await resp.json();
+    console.log({ data });
   } catch (error) {
-    console.log(error)
+    console.error(error);
   }
-
-
-
-}
+};
